@@ -1,36 +1,50 @@
-package juegomemori;
+package proyecto_2;
 
+import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
-public class juego extends javax.swing.JFrame {
+public class juego1 extends javax.swing.JFrame {
 
     private JuegoMemori log = new JuegoMemori();
-    private boolean caraUp = false; 
+    private boolean caraUp = false;
     private ImageIcon Im1, Im2;
     private JButton[] pbtn = new JButton[2];
-    private boolean primerc = false; 
-    private int puntaje=0;
-    
-    
-    public juego() {
-        initComponents();
-        setCards();
-    }
+    private boolean primerc = false;
+    private int puntajeJugador1 = 0;
+    private int puntajeJugador2 = 0;
+    private int turno = 1;  // 1 para Jugador 1, 2 para Jugador 2
+   
 
-    private void setCards(){
-        int[]numbers= log.getCardNumbers();
+    Menu_Inicio menuinicio;
+    JuegoMemori m=new JuegoMemori();
+     Logica_Cuentas c;
+     
+    public juego1(Menu_Inicio menuinicio) {   //constructor recibe la referencia al menú inicial.
+        initComponents();
+        setLocationRelativeTo(null);
+       this.menuinicio=menuinicio;
+        setCards();                      // metodo que inicializ las cartas del juego
+        actualizarTurno();              // metodo que indica el jugador en turno
+       
+    }
+    
+// llama al arreglo de num aleatorios dela clase JuegoMemori
+// y los asigna a la matriz de botones del juego, asigna las imagenes correspondientes 
+//y devuelve esta matriz
+    private void setCards() {      
+        int[] numbers = log.getCardNumbers();  
         int[][] matriz = arreglobidimensional(numbers);
-        
+
         //Matriz de los botones
         JButton[][] botones = {
-        {btn1, btn2, btn3, btn4},
-        {btn5, btn6, btn7, btn8},
-        {btn9, btn10, btn11, btn12},
-        {btn13, btn14, btn15, btn16}
+            {btn1, btn2, btn3, btn4},
+            {btn5, btn6, btn7, btn8},
+            {btn9, btn10, btn11, btn12},
+            {btn13, btn14, btn15, btn16}
         };
-        
+
         //Asigna las imagenes a cada boton de la matriz
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -38,13 +52,13 @@ public class juego extends javax.swing.JFrame {
             }
         }
     }
-    
-    //El metodo convuerte el arreglo unidimensional al bidimenisonal a una matriz 4x4
-    private int[][] arreglobidimensional(int[] numbers){
-        int[][] matriz = new int [4][4];
+
+    //El metodo convierte el arreglo unidimensional al bidimensional a una matriz 4x4
+    private int[][] arreglobidimensional(int[] numbers) {
+        int[][] matriz = new int[4][4];
         int indice = 0;
-        
-        //recorre la matriz
+
+        //Recorre la matriz
         for (int filas = 0; filas < 4; filas++) {
             for (int columnas = 0; columnas < 4; columnas++) {
                 matriz[filas][columnas] = numbers[indice++];
@@ -53,42 +67,54 @@ public class juego extends javax.swing.JFrame {
         return matriz;
     }
 
-    private void btnEnabled(JButton btn){
-    
-        if(!caraUp){
-        btn.setEnabled(false);
-        Im1 = (ImageIcon) btn.getDisabledIcon();
-        pbtn[0]= btn;
-        caraUp=true; 
-        primerc = false; 
-        
-        }
-        else{
-        btn.setEnabled(false);
-        pbtn[1]=btn;
-        Im2 = (ImageIcon) btn.getDisabledIcon();
-        primerc=true;
-        puntaje += 20;
-        pregwin();
+    // Logica de seleccion de cartas y suma de puntos 
+    private void btnEnabled(JButton btn) {
+
+        if (!caraUp) {                 //si caraUp=fasle no hay cartas seleccionadas
+            btn.setEnabled(false);       //desabilita el boton de la carta de seleccionada
+            Im1 = (ImageIcon) btn.getDisabledIcon();  //guarda la imagen de la carta en una variable
+            pbtn[0] = btn;                 // guarda el boton en variable 
+            caraUp = true;                 // caraUp=true indica la primera carta fue seleccionada
+            primerc = false;              // primero=false indica segunda carta no seleccionada
+
+        } else {
+            btn.setEnabled(false);       
+            pbtn[1] = btn;
+            Im2 = (ImageIcon) btn.getDisabledIcon();
+            primerc = true;
+            if (Im1.getDescription().compareTo(Im2.getDescription()) == 0) {
+                // si las imagenes coinciden, aumentamos el puntaje del jugador actual
+                if (turno == 1) {
+                    puntajeJugador1 += 20;
+                } else {
+                    puntajeJugador2 += 20;
+                }
+            } else {
+               
+                
+            }
+            // marcador de puntos
+            puntos1.setText(m.getJugador1().username+" : " + puntajeJugador1);
+            puntos2.setText(m.getJugador2().username +" : "+ puntajeJugador2);
+            turnos.setText((turno==2?"Turno de "+m.getJugador1().username:"Turno de "+m.getJugador2().username));
+            pregwin();    
+            compare();
         }
     }
-    
-    private void compare() {
+// vuelve a habilitar los botones de las cartas selecionadas si no coicidieron 
+    private void compare() {   
         if (caraUp && primerc) {
-
             if (Im1.getDescription().compareTo(Im2.getDescription()) != 0) {
-
                 pbtn[0].setEnabled(true);
                 pbtn[1].setEnabled(true);
-                if(puntaje>10)puntaje-=10;
             }
             caraUp = false;
+            turno=(turno==1?2:1);
         }
     }
-    
-    private void reiniciar(){
-    
-        btn1.setEnabled(true);
+// vuelve habilar todos los botones y las demas configuraciones default para iniciar otro juego
+    private void reiniciar() {   
+         btn1.setEnabled(true);
         btn2.setEnabled(true);
         btn3.setEnabled(true);
         btn4.setEnabled(true);
@@ -104,24 +130,59 @@ public class juego extends javax.swing.JFrame {
         btn14.setEnabled(true);
         btn15.setEnabled(true);
         btn16.setEnabled(true);
-        
-        primerc = false; 
-        caraUp= false;
-        puntaje= 0; 
-    
+     
+        primerc = false;
+        caraUp = false;
+        puntajeJugador1 = 0;
+        puntajeJugador2 = 0;
+        turno = 1;
+        // marcador 
+        puntos1.setText(m.getJugador1().username+" : 0");
+        puntos2.setText(m.getJugador2().username+" : 0");
+        setCards();
+        actualizarTurno();
     }
-    
+
+    private void actualizarTurno() {  // muestra el turno y puntaje despues de cada turno
+        if (turno == 1) {
+            JOptionPane.showMessageDialog(this, "Turno de "+m.getJugador1().username+" - Puntaje: " + puntajeJugador1);
+        } else {
+            JOptionPane.showMessageDialog(this, "Turno de "+m.getJugador2().username+" - Puntaje: " + puntajeJugador2);
+        }
+    }
+// valida que cuando todas las cartas ya estan decubiertas entonces  se acaba el juego y muestra los resultados
     private void pregwin() {
-    if (!btn1.isEnabled() && !btn2.isEnabled() && !btn3.isEnabled() &&
-        !btn4.isEnabled() && !btn5.isEnabled() && !btn6.isEnabled() &&
-        !btn7.isEnabled() && !btn8.isEnabled() && !btn9.isEnabled() &&
-        !btn10.isEnabled() && !btn11.isEnabled() && !btn12.isEnabled() &&
-        !btn13.isEnabled() && !btn14.isEnabled() && !btn15.isEnabled() &&
-        !btn16.isEnabled()) {
-        
-        JOptionPane.showMessageDialog(this, "Felicidades, usted ha ganado. Su puntaje es: " + puntaje, "¡Ganaste!", JOptionPane.INFORMATION_MESSAGE);
+        if (!btn1.isEnabled() && !btn2.isEnabled() && !btn3.isEnabled()
+                && !btn4.isEnabled() && !btn5.isEnabled() && !btn6.isEnabled()
+                && !btn7.isEnabled() && !btn8.isEnabled() && !btn9.isEnabled()
+                && !btn10.isEnabled() && !btn11.isEnabled() && !btn12.isEnabled()
+                && !btn13.isEnabled() && !btn14.isEnabled() && !btn15.isEnabled()
+                && !btn16.isEnabled()) {
+            
+            mostrarResultados();
+            
+        } else {
+            actualizarTurno();
+        }
     }
-}
+    // mensaje del ganador 
+    private void mostrarResultados() {
+        String mensaje;
+
+        // Comparar los puntajes de los jugadores
+        if (puntajeJugador1 > puntajeJugador2) {
+            
+            mensaje = "Felicidades "+m.getJugador1().username+", has ganado. Tu puntaje es: " + puntajeJugador1;
+            
+        } else if (puntajeJugador1 < puntajeJugador2) {
+            mensaje = "Felicidades "+m.getJugador2().username+", has ganado. Tu puntaje es: " + puntajeJugador2;
+        } else {
+            mensaje = "¡Empate! Puntajes: \n"+m.getJugador1().username+ " - " + puntajeJugador1 + "\n"+m.getJugador1().username+" - " + puntajeJugador2;
+        }
+
+        // Mostrar los resultados
+        JOptionPane.showMessageDialog(this, mensaje, "Resultados Finales", JOptionPane.INFORMATION_MESSAGE);
+    }
     
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -146,12 +207,16 @@ public class juego extends javax.swing.JFrame {
         btn14 = new javax.swing.JButton();
         btn16 = new javax.swing.JButton();
         btnReiniciar = new javax.swing.JButton();
+        puntos1 = new javax.swing.JLabel();
+        puntos2 = new javax.swing.JLabel();
+        turnos = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setLocation(new java.awt.Point(560, 150));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(51, 51, 255));
-        jLabel1.setText("JUEGO DE MEMORIA");
+        jLabel1.setForeground(new java.awt.Color(102, 0, 102));
+        jLabel1.setText("CAN U REMEMBER?");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -504,7 +569,7 @@ public class juego extends javax.swing.JFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
-        btnReiniciar.setBackground(new java.awt.Color(255, 51, 255));
+        btnReiniciar.setBackground(new java.awt.Color(102, 0, 102));
         btnReiniciar.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         btnReiniciar.setForeground(new java.awt.Color(204, 204, 255));
         btnReiniciar.setText("Reiniciar Juego");
@@ -514,32 +579,55 @@ public class juego extends javax.swing.JFrame {
             }
         });
 
+        puntos1.setText("Jugador 1: 0");
+
+        puntos2.setText("Jugador 2: 0");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(56, 56, 56)
+                        .addComponent(puntos1, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(btnReiniciar))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(puntos2, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                                .addGap(17, 17, 17))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(42, 42, 42)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnReiniciar)))
-                .addContainerGap(30, Short.MAX_VALUE))
+                        .addGap(33, 33, 33)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(turnos, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 173, Short.MAX_VALUE)))))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(btnReiniciar))
-                .addGap(18, 18, 18)
+                    .addComponent(btnReiniciar)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(puntos1)
+                    .addComponent(puntos2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(turnos, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -680,37 +768,7 @@ public class juego extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(juego.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(juego.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(juego.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(juego.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new juego().setVisible(true);
-            }
-        });
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn1;
@@ -732,5 +790,8 @@ public class juego extends javax.swing.JFrame {
     private javax.swing.JButton btnReiniciar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel puntos1;
+    private javax.swing.JLabel puntos2;
+    private javax.swing.JLabel turnos;
     // End of variables declaration//GEN-END:variables
 }
